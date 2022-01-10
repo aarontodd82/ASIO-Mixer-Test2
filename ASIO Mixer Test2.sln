@@ -3,7 +3,18 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.32014.148
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ASIO Mixer Test2", "ASIO Mixer Test2\ASIO Mixer Test2.csproj", "{1EEE0BF6-7C9C-4D70-8975-E77B19D3B5EB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ASIO Mixer Test2", "ASIO Mixer Test2\ASIO Mixer Test2.csproj", "{1EEE0BF6-7C9C-4D70-8975-E77B19D3B5EB}"
+	ProjectSection(ProjectDependencies) = postProject
+		{B8388E1B-0948-4E65-B25F-A6758CE4D41B} = {B8388E1B-0948-4E65-B25F-A6758CE4D41B}
+		{69460D3D-B0F1-4070-8229-2B639A8CF5CE} = {69460D3D-B0F1-4070-8229-2B639A8CF5CE}
+		{FE097ED4-243F-4582-A3D6-738B1CAF63C9} = {FE097ED4-243F-4582-A3D6-738B1CAF63C9}
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NAudio.Core", "..\NAudio\NAudio.Core\NAudio.Core.csproj", "{B8388E1B-0948-4E65-B25F-A6758CE4D41B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NAudio.Asio", "..\NAudio\NAudio.Asio\NAudio.Asio.csproj", "{69460D3D-B0F1-4070-8229-2B639A8CF5CE}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NAudio", "..\NAudio\NAudio\NAudio.csproj", "{FE097ED4-243F-4582-A3D6-738B1CAF63C9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +26,18 @@ Global
 		{1EEE0BF6-7C9C-4D70-8975-E77B19D3B5EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1EEE0BF6-7C9C-4D70-8975-E77B19D3B5EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1EEE0BF6-7C9C-4D70-8975-E77B19D3B5EB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B8388E1B-0948-4E65-B25F-A6758CE4D41B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B8388E1B-0948-4E65-B25F-A6758CE4D41B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B8388E1B-0948-4E65-B25F-A6758CE4D41B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B8388E1B-0948-4E65-B25F-A6758CE4D41B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{69460D3D-B0F1-4070-8229-2B639A8CF5CE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{69460D3D-B0F1-4070-8229-2B639A8CF5CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{69460D3D-B0F1-4070-8229-2B639A8CF5CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{69460D3D-B0F1-4070-8229-2B639A8CF5CE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FE097ED4-243F-4582-A3D6-738B1CAF63C9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FE097ED4-243F-4582-A3D6-738B1CAF63C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FE097ED4-243F-4582-A3D6-738B1CAF63C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FE097ED4-243F-4582-A3D6-738B1CAF63C9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

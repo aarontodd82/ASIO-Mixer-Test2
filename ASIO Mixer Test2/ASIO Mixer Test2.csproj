@@ -9,7 +9,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="NAudio" Version="2.0.1" />
+    <ProjectReference Include="..\..\NAudio\NAudio.Asio\NAudio.Asio.csproj" />
+    <ProjectReference Include="..\..\NAudio\NAudio.Core\NAudio.Core.csproj" />
+    <ProjectReference Include="..\..\NAudio\NAudio\NAudio.csproj" />
   </ItemGroup>
 
 </Project>
