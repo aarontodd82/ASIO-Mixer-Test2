@@ -1,5 +1,6 @@
 ﻿using NAudio.Dsp;
 using NAudio.Wave;
+using NAudio.Wave.SampleProviders;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -28,8 +29,9 @@ namespace ASIO_Mixer_Test2
         #region Variables
         protected int SampleRate = 48000;
         protected ASIO ASIO;
-        protected float[] InputBuffer;
-        protected float[] OutputBuffer;
+        protected float[][] InputBuffer;
+        protected float[][] OutputBuffer;
+
         protected BiQuadFilter[][] Filters;
 
         protected int NumberOf_IO_Channels = 8; //In and Out must be the same (for now)
@@ -37,7 +39,8 @@ namespace ASIO_Mixer_Test2
         protected int OutputChannelOffset = 0;
         protected int SamplesPerChannel = 256;
         protected int BufferSize = 256;
-        protected float MasterVolume = 1.0f;
+        protected float InputVolume = .95f;
+        protected float OutputVolume = .95f;
 
         protected volatile bool IsMultiThreadingEnabled = false;
         protected readonly Thread DSP_Thread;
@@ -47,6 +50,8 @@ namespace ASIO_Mixer_Test2
 
         protected DateTime DSP_StartTime;
         protected TimeSpan DSP_ProcessingTime;
+
+        
 
         #endregion
 
@@ -125,15 +130,30 @@ namespace ASIO_Mixer_Test2
             if (this.ASIO == null)
             {
                 this.ASIO = new ASIO((string)comboAsioDevices.SelectedItem);
-                this.ASIO.AudioAvailable += this.On_ASIO_AudioAvailable;
+                
                 this.ASIO.Init(NumberOf_IO_Channels, SampleRate, OutputChannelOffset, InputChannelOffset);
 
                 //Create the Input and Output buffers (default HW size * number of channels)
                 var FramesPerBuffer = this.ASIO.SamplesPerBuffer;
                 var BufferSize = FramesPerBuffer * NumberOf_IO_Channels;
+                
+                
                 //For performance reasons, only create the array once!
-                this.InputBuffer = new float[BufferSize];
-                this.OutputBuffer = new float[BufferSize];
+                this.InputBuffer = new float[BufferSize][];
+                for (int i = 0; i < this.InputBuffer.Length; i++)
+                {
+                    this.InputBuffer[i] = new float[SamplesPerChannel];
+                }
+                this.OutputBuffer = new float[BufferSize][];
+                for (int i = 0; i < this.OutputBuffer.Length; i++)
+                {
+                    this.OutputBuffer[i] = new float[SamplesPerChannel];
+                }
+
+
+                this.ASIO.AudioAvailable += this.On_ASIO_AudioAvailable;
+
+
             }
 
             this.ASIO?.Start();
@@ -151,22 +171,22 @@ namespace ASIO_Mixer_Test2
             this.DSP_StartTime = DateTime.Now;
 
             //Get the ASIO input stream
-            e.GetAsInterleavedSamples(InputBuffer);
+            e.GetAsJaggedSamples(InputBuffer);
 
 
                 //IDK?
-                this.Dispatcher.Invoke(() => {
-                    if (chk_Threading.IsChecked ?? true)
-                    {
-                        this.IsMultiThreadingEnabled = true;
+                //this.Dispatcher.Invoke(() => {
+                //    if (chk_Threading.IsChecked ?? true)
+                //    {
+                //        this.IsMultiThreadingEnabled = true;
 
-                    }
-                    else
-                    {
-                        this.IsMultiThreadingEnabled = false;
+                //    }
+                //    else
+                //    {
+                //        this.IsMultiThreadingEnabled = false;
 
-                    }
-                });
+                //    }
+                //});
                 //IDK?
 
 
@@ -182,7 +202,7 @@ namespace ASIO_Mixer_Test2
             }
 
             //Send OutputBuffer to ASIO Output stream
-            e.SetAsInterleavedSamples(OutputBuffer);
+            e.SetAsJaggedSamples(OutputBuffer);
 
             this.DSP_ProcessingTime = DateTime.Now - this.DSP_StartTime;
         }
@@ -197,10 +217,10 @@ namespace ASIO_Mixer_Test2
                     if (!this.DSP_AllowedToRun) //Check if we should run
                         break;
 
-                    this.DSP_MutliThreaded();
+                    this.DSP_MultiThreaded();
 
-                    this.DSP_PassCompleted_ARE.Set(); //Signal that we are done
                     this.DSP_RunOnce_ARE.Reset(); //Tell the thread it is ready to pause
+                    this.DSP_PassCompleted_ARE.Set(); //Signal that we are done
                 }
             }
             catch (Exception ex)
@@ -209,7 +229,7 @@ namespace ASIO_Mixer_Test2
             }
         }
 
-        protected virtual void DSP_MutliThreaded()
+        protected virtual void DSP_MultiThreaded()
         {
             try
             {
@@ -249,37 +269,25 @@ namespace ASIO_Mixer_Test2
 
         protected virtual void DSP_Process_Channel(int ChannelIndex)
         {
-            int InterleavedSampleIndex = 0;
-            if (ChannelIndex == 0 || ChannelIndex == 1)
+            float TempSample;
+            int SampleIndex = 0;
+            int FilterIndex = 0;
+            int OutputOffSet = 0;
+            var ChannelFilters = this.Filters[ChannelIndex];
+            var ChannelFilterCount = ChannelFilters.Length;
+
+            for (; SampleIndex < SamplesPerChannel; SampleIndex++)
             {
-                for (int SampleIndex = 0; SampleIndex < SamplesPerChannel; SampleIndex++)
+                TempSample = (float)InputBuffer[ChannelIndex][SampleIndex] * this.InputVolume;
+
+                for (; FilterIndex < ChannelFilterCount; FilterIndex++)
                 {
-                    InterleavedSampleIndex = ChannelIndex + this.NumberOf_IO_Channels * SampleIndex;
-                    var TempSample = (float)InputBuffer[InterleavedSampleIndex];
-
-                    foreach (var filter in this.Filters[ChannelIndex])
-                    {
-                        TempSample = filter.Transform(TempSample);
-                    }
-
-                    OutputBuffer[InterleavedSampleIndex + 2] = TempSample * this.MasterVolume;
+                    TempSample = ChannelFilters[FilterIndex].Transform(TempSample);
                 }
-            }
-            else if (ChannelIndex > 3)
-            {
-                for (int SampleIndex = 0; SampleIndex < SamplesPerChannel; SampleIndex++)
-                {
-                    InterleavedSampleIndex = ChannelIndex + this.NumberOf_IO_Channels * SampleIndex;
-                    var TempSample = (float)InputBuffer[InterleavedSampleIndex];
 
-                    foreach (var filter in this.Filters[ChannelIndex])
-                    {
-                        TempSample = filter.Transform(TempSample);
-                    }
-
-                    OutputBuffer[InterleavedSampleIndex] = TempSample * this.MasterVolume;
-                }
+                OutputBuffer[ChannelIndex + OutputOffSet][SampleIndex] = TempSample * this.OutputVolume;
             }
+
         }
 
 
