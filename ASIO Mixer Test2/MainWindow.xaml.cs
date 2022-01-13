@@ -40,8 +40,8 @@ namespace ASIO_Mixer_Test2
 
         protected int InputChannelOffset = 0;
         protected int OutputChannelOffset = 0;
-        protected int SamplesPerChannel = 256;
-        protected int BufferSize = 256;
+        protected int SamplesPerChannel = 32;
+        protected int BufferSize = 32;
         protected float InputVolume = .95f;
         protected float OutputVolume = .95f;
 
@@ -76,17 +76,17 @@ namespace ASIO_Mixer_Test2
             this.Filters = new BiQuadFilter[this.NumberOf_IO_Channels][];
             for (int i = 0; i < this.NumberOf_IO_Channels; i++)
             {
-                this.Filters[i] = new BiQuadFilter[10];
-                this.Filters[i][0] = BiQuadFilter.HighPassFilter(this.SampleRate, 10, 3.0f);
-                this.Filters[i][1] = BiQuadFilter.PeakingEQ(this.SampleRate, 20, 1.0f, 0.3f);
-                this.Filters[i][2] = BiQuadFilter.PeakingEQ(this.SampleRate, 30, 1.0f, 0.3f);
-                this.Filters[i][3] = BiQuadFilter.PeakingEQ(this.SampleRate, 40, 1.0f, 0.3f);
-                this.Filters[i][4] = BiQuadFilter.PeakingEQ(this.SampleRate, 50, 1.0f, 0.3f);
-                this.Filters[i][5] = BiQuadFilter.PeakingEQ(this.SampleRate, 60, 1.0f, 0.3f);
-                this.Filters[i][6] = BiQuadFilter.PeakingEQ(this.SampleRate, 70, 1.0f, 0.3f);
-                this.Filters[i][7] = BiQuadFilter.PeakingEQ(this.SampleRate, 80, 1.0f, 0.3f);
-                this.Filters[i][8] = BiQuadFilter.PeakingEQ(this.SampleRate, 90, 1.0f, 0.3f);
-                this.Filters[i][9] = BiQuadFilter.PeakingEQ(this.SampleRate, 100, 1.0f, 0.3f);
+                this.Filters[i] = new BiQuadFilter[1];
+                //this.Filters[i][0] = BiQuadFilter.LowPassFilter(this.SampleRate, 250f, 1);
+                //this.Filters[i][1] = BiQuadFilter.PeakingEQ(this.SampleRate, 20, 1.0f, 0.3f);
+                //this.Filters[i][2] = BiQuadFilter.PeakingEQ(this.SampleRate, 30, 1.0f, 0.3f);
+                //this.Filters[i][3] = BiQuadFilter.PeakingEQ(this.SampleRate, 40, 1.0f, 0.3f);
+                //this.Filters[i][4] = BiQuadFilter.PeakingEQ(this.SampleRate, 50, 1.0f, 0.3f);
+                //this.Filters[i][5] = BiQuadFilter.PeakingEQ(this.SampleRate, 60, 1.0f, 0.3f);
+                //this.Filters[i][6] = BiQuadFilter.PeakingEQ(this.SampleRate, 70, 1.0f, 0.3f);
+                //this.Filters[i][7] = BiQuadFilter.PeakingEQ(this.SampleRate, 80, 1.0f, 0.3f);
+                //this.Filters[i][8] = BiQuadFilter.PeakingEQ(this.SampleRate, 90, 1.0f, 0.3f);
+                //this.Filters[i][9] = BiQuadFilter.PeakingEQ(this.SampleRate, 100, 1.0f, 0.3f);
             }
 
             routingMatrix = new float[8, 8];
@@ -194,20 +194,21 @@ namespace ASIO_Mixer_Test2
             e.GetAsJaggedSamples(InputBuffer);
 
 
-                //IDK?
-                //this.Dispatcher.Invoke(() => {
-                //    if (chk_Threading.IsChecked ?? true)
-                //    {
-                //        this.IsMultiThreadingEnabled = true;
+            //IDK?
+            this.Dispatcher.Invoke(() =>
+            {
+                if (chk_Threading.IsChecked ?? true)
+                {
+                    this.IsMultiThreadingEnabled = true;
 
-                //    }
-                //    else
-                //    {
-                //        this.IsMultiThreadingEnabled = false;
+                }
+                else
+                {
+                    this.IsMultiThreadingEnabled = false;
 
-                //    }
-                //});
-                //IDK?
+                }
+            });
+            //IDK?
 
 
 
@@ -276,42 +277,11 @@ namespace ASIO_Mixer_Test2
         {
             try
             {
-               
 
-                for (int SampleIndex = 0; SampleIndex < SamplesPerChannel; SampleIndex++)
+                for (int OutChannelIndex = 0; OutChannelIndex < this.NumberOf_IO_Channels; OutChannelIndex++)
                 {
-                    //this.DSP_Process_Channel(ChannelIndex);
-                                        
-                    float TempInSample = 0;
-                    float TempOutSample = 0;
-                    int FilterIndex = 0;
-                    //var ChannelFilters = this.Filters[OutChannelIndex];
-                    //var ChannelFilterCount = ChannelFilters.Length;
 
-                    for (int OutChannelIndex = 0; OutChannelIndex < this.NumberOf_IO_Channels; OutChannelIndex++)
-                    {
-                        
-
-                        //for (; FilterIndex < ChannelFilterCount; FilterIndex++)
-                        //{
-                        //    TempSample = ChannelFilters[FilterIndex].Transform(TempSample);
-                        //}
-
-                        for (int InChannelIndex = 0; InChannelIndex < this.NumberOf_IO_Channels; InChannelIndex++)
-                        {
-                            TempInSample = (float)InputBuffer[InChannelIndex][SampleIndex] * this.InputVolume;
-
-                            var amount = routingMatrix[InChannelIndex, OutChannelIndex];
-                            if (amount > 0)
-                                TempOutSample = TempOutSample + TempInSample * amount;
-                            
-                            
-                        }
-                        OutputBuffer[OutChannelIndex][SampleIndex] = TempOutSample * this.OutputVolume; 
-
-
-                    }
-
+                    this.DSP_Process_Channel(OutChannelIndex);
 
 
 
@@ -324,31 +294,52 @@ namespace ASIO_Mixer_Test2
             }
         }
 
-        protected virtual void DSP_Process_Channel(int ChannelIndex)
+        protected virtual void DSP_Process_Channel(int OutChannelIndex)
         {
-            //float TempSample;
-            //int SampleIndex = 0;
-            //int FilterIndex = 0;
-            //int OutputOffSet = 0;
-            //var ChannelFilters = this.Filters[ChannelIndex];
-            //var ChannelFilterCount = ChannelFilters.Length;
+            var ChannelFilters = this.Filters[OutChannelIndex];
+            var ChannelFilterCount = ChannelFilters.Length;
 
-            //for (; SampleIndex < SamplesPerChannel; SampleIndex++)
-            //{
-            //    TempSample = (float)InputBuffer[ChannelIndex][SampleIndex] * this.InputVolume;
 
-            //    for (; FilterIndex < ChannelFilterCount; FilterIndex++)
-            //    {
-            //        TempSample = ChannelFilters[FilterIndex].Transform(TempSample);
-            //    }
 
-            //    OutputBuffer[ChannelIndex + OutputOffSet][SampleIndex] = TempSample * this.OutputVolume;
-            //}
+            for (int SampleIndex = 0; SampleIndex < SamplesPerChannel; SampleIndex++)
+            {
+
+                float TempInSample = 0;
+                float TempOutSample = 0;
+                int FilterIndex = 0;
+
+                for (int InChannelIndex = 0; InChannelIndex < this.NumberOf_IO_Channels; InChannelIndex++)
+                {
+
+
+                    TempInSample = (float)InputBuffer[InChannelIndex][SampleIndex] * this.InputVolume;
+
+                    //Filtering
+                    for (; FilterIndex < ChannelFilterCount; FilterIndex++)
+                    {
+                        TempInSample = ChannelFilters[FilterIndex].Transform(TempInSample);
+                    }
+                    //Filtering
+
+                    //Routing
+                    var amount = routingMatrix[InChannelIndex, OutChannelIndex];
+                    if (amount > 0)
+                        TempOutSample = TempOutSample + TempInSample * amount;
+                    //Routing
+
+                }
+                OutputBuffer[OutChannelIndex][SampleIndex] = TempOutSample * this.OutputVolume;
+
+
+            }
 
         }
 
+        private void chan1_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            routingMatrix[0, 0] = (float)chan1.Value;
 
-
-
+            
+        }
     }
 }
