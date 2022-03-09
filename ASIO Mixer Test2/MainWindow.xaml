@@ -11,7 +11,7 @@
     <Grid>
         <ComboBox x:Name="comboAsioDevices" HorizontalAlignment="Left" VerticalAlignment="Top" Width="120" Margin="61,24,0,0"/>
         <Button x:Name="buttonBegin" Content="Begin" HorizontalAlignment="Left" Margin="356,31,0,0" VerticalAlignment="Top" Width="75" Click="OnButtonBeginClick"/>
-        <CheckBox x:Name="chk_Threading" Content="CheckBox" HorizontalAlignment="Left" Margin="204,177,0,0" VerticalAlignment="Top"/>
+        <CheckBox x:Name="chk_Threading" Content="Multi-Threading" HorizontalAlignment="Left" Margin="204,177,0,0" VerticalAlignment="Top" Checked="chk_Threading_Checked"/>
         <Slider x:Name="chan1" HorizontalAlignment="Left" Margin="144,256,0,0" VerticalAlignment="Top" Width="21" Height="138" Orientation="Vertical" Maximum="1" SmallChange="0.01" LargeChange="0.1" ValueChanged="chan1_ValueChanged"/>
         <Label Content="Label" HorizontalAlignment="Left" Margin="495,204,0,0" VerticalAlignment="Top"/>
 

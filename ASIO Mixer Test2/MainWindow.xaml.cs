@@ -28,14 +28,14 @@ namespace ASIO_Mixer_Test2
     {
 
         #region Variables
-        protected int SampleRate = 48000;
+        protected int SampleRate = 96000;
         protected ASIO ASIO;
         protected float[][] InputBuffer;
         protected float[][] OutputBuffer;
 
         protected BiQuadFilter[][] Filters;
 
-        protected int NumberOf_IO_Channels = 8; //In and Out must be the same (for now)
+        protected int NumberOf_IO_Channels = 2; //In and Out must be the same (for now)
 
 
         protected int InputChannelOffset = 0;
@@ -71,7 +71,7 @@ namespace ASIO_Mixer_Test2
                 comboAsioDevices.Items.Add(device);
             }
 
-
+            //test filters
 
             this.Filters = new BiQuadFilter[this.NumberOf_IO_Channels][];
             for (int i = 0; i < this.NumberOf_IO_Channels; i++)
@@ -99,8 +99,8 @@ namespace ASIO_Mixer_Test2
             //added to test
             routingMatrix[0, 0] = 1.0f;
             routingMatrix[1, 0] = 1.0f;
-            routingMatrix[2, 0] = 1.0f;
-            routingMatrix[3, 0] = 1.0f;
+            routingMatrix[0, 1] = 1.0f;
+            routingMatrix[1, 1] = 1.0f;
             //added to test
 
 
@@ -315,10 +315,10 @@ namespace ASIO_Mixer_Test2
                     TempInSample = (float)InputBuffer[InChannelIndex][SampleIndex] * this.InputVolume;
 
                     //Filtering
-                    for (; FilterIndex < ChannelFilterCount; FilterIndex++)
-                    {
-                        TempInSample = ChannelFilters[FilterIndex].Transform(TempInSample);
-                    }
+                    //for (; FilterIndex < ChannelFilterCount; FilterIndex++)
+                    //{
+                    //    TempInSample = ChannelFilters[FilterIndex].Transform(TempInSample);
+                    //}
                     //Filtering
 
                     //Routing
@@ -340,6 +340,11 @@ namespace ASIO_Mixer_Test2
             routingMatrix[0, 0] = (float)chan1.Value;
 
             
+        }
+
+        private void chk_Threading_Checked(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }
